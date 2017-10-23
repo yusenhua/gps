@@ -1,0 +1,63 @@
+spring:
+  profiles:
+    active: ${PROFILE:staging}
+    default: ${PROFILE:local}
+
+  # if you use your own connection type instead of DruidDataSource or
+  # org.apache.tomcat.jdbc.pool.DataSource, include this field
+
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: ${MYSQL_URL:jdbc:mysql://10.200.3.178/lvmama_coupon?useUnicode=true&characterEncoding=utf8}
+    username: ${MYSQL_USER:lvmama_coupon} 
+    password: ${MYSQL_PASS:123456}
+    tomcat:
+      test-while-idle: true
+      time-between-eviction-runs-millis: 30001 
+      min-evictable-idle-time-millis: 300001
+      validation-query: SELECT 1
+      remove-abandoned: true
+      remove-abandoned-timeout: 60
+    
+  # cache service
+  redis: 
+    database: ${REDIS_DB_NUM:0}
+    host: ${REDIS_URL:192.168.0.81}
+    port: ${REDIS_PORT:6379}
+    pool: 
+      max-active: 8
+      max-idle: 8
+      min-idle: 0
+      max-wait: -1
+
+  http:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+
+server:
+  port: ${SERVER_PORT:8686}
+  context-path: /gps
+  max-http-post-size: 500000000
+
+mybatis:
+  mapper-locations: classpath*:com/user/gps/mapper/*.xml
+  type-aliases-package: com.user.gps.model
+
+logging:
+  level: INFO
+
+
+# ignore flyway validation
+flyway:
+  url: ${MYSQL_URL:jdbc:mysql://10.112.4.207/lvmama_coupon}
+  user: ${MYSQL_USER:root}
+  password: ${MYSQL_PASS:123456}
+  validateOnMigrate: false 
+  baselineOnMigrate: true
+  enabled: false
+  
+# setting for eurake server registry
+# HOST_NAME is the hostname in current machine
+

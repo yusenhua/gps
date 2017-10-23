@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="GPS_INFORMATION" >
+
+    <resultMap id="BaseResultMap" type="com.user.gps.model.GpsInformation" >
+        <result column="id" property="id"  />
+        <result column="user_id" 		property="userId" />
+        <result column="gps_information" 	property="gpsInformation" />
+        <result column="create_time" 			property="createTime" />
+    </resultMap>
+    
+    <insert id="insert" parameterType="Map" useGeneratedKeys="true">
+        INSERT INTO
+            ${table_name}
+            (id, user_id, gps_information, create_time)
+        VALUES
+            (#{id}, #{userId}, #{gpsInformation}, NOW())
+    </insert>
+     
+     
+     
+      <select id="selectByUserId" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        WHERE
+            user_id = #{userId}
+    </select>
+    
+</mapper>

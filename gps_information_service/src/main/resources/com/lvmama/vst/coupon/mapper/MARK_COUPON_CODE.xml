@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MARK_COUPON_CODE" >
+
+    <resultMap id="BaseResultMap" type="com.gps.information.MarkCouponCode" >
+        <result column="COUPON_CODE_ID" property="couponCodeId"  />
+        <result column="COUPON_ID" 		property="couponId" />
+        <result column="COUPON_CODE" 	property="couponCode" />
+        <result column="USED" 			property="used" />
+        <result column="BEGIN_TIME" 	property="beginTime" />
+        <result column="END_TIME" 		property="endTime" />
+        <result column="CREATE_TIME" 	property="createtime" />
+        <result column="GOT_TIME" 		property="gotTime" />
+        <result column="TASK_FILE_ID" 	property="taskFileId" />
+    </resultMap>
+    
+    <resultMap id="BaseResultMapMcc" type="com.gps.information.MarkCouponCode" >
+      <result column="COUPON_CODE_ID" property="couponCodeId"  />
+        <result column="COUPON_ID"      property="couponId" />
+        <result column="COUPON_CODE"    property="couponCode" />
+        <result column="USED"           property="used" />
+        <result column="BEGIN_TIME"     property="beginTime" />
+        <result column="END_TIME"       property="endTime" />
+        <result column="CREATE_TIME"    property="createtime" />
+        <result column="GOT_TIME"       property="gotTime" />
+        <result column="TASK_FILE_ID"   property="taskFileId" />
+        
+        <result column="DAY_AFTER" property="m_dayAfter"/>
+        <result column="TERM_OF_VALIDITY" property="m_termOfValidity"/>
+        <result column="M_BEGIN_TIME" property="m_beginTime"/>
+        <result column="VALID_TYPE" property="validType"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="Map" useGeneratedKeys="true">
+        INSERT INTO
+            ${table_name}
+            (COUPON_CODE_ID, COUPON_ID, COUPON_CODE, USED, BEGIN_TIME, END_TIME, TASK_FILE_ID, CREATE_TIME, UPDATE_TIME)
+        VALUES
+            (#{couponCodeId}, #{couponId}, #{couponCode}, #{used}, #{beginTime}, #{endTime}, #{taskFileId}, NOW(), NOW())
+    </insert>
+
+    <delete id="deleteByPrimaryKey" parameterType="Map">
+        DELETE FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE_ID = #{couponCodeId}
+    </delete>
+
+    <update id="updateByPrimaryKey" parameterType="Map" >
+        UPDATE
+            ${table_name}
+        SET
+            COUPON_ID     = #{couponId},
+            COUPON_CODE   = #{couponCode},
+            USED          = #{used},
+            BEGIN_TIME    = #{beginTime},
+            END_TIME      = #{endTime},
+            TASK_FILE_ID  = #{taskFileId},
+            UPDATE_TIME   = NOW()
+        WHERE
+            COUPON_CODE_ID = #{couponCodeId}
+    </update>
+
+    <sql id="reuse_query_sql">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name}  mcc
+            <if test="isValid != null and isValid == 'true'">
+                , MARK_COUPON mc
+            </if>
+        <where>
+            <if test="couponId != null">
+                mcc.coupon_id = #{couponId}
+            </if>
+            <if test="couponCode != null">
+               and mcc.COUPON_CODE = #{couponCode}
+            </if>
+            <if test="used != null">
+               and  mcc.USED = #{used}
+            </if>
+            <if test="isValid != null and isValid == 'true'">
+              AND mc.COUPON_ID = mcc.COUPON_ID
+              AND mc.VALID = 'true'
+              AND mcc.END_TIME &gt;= NOW()
+            </if>
+        </where>
+    </sql>
+    
+    <select id="reuse_query_sql" resultType="int" parameterType="Map">
+        SELECT
+            count(1)
+        FROM
+            ${table_name} mcc
+            <if test="isValid != null and isValid == 'true'">
+                , MARK_COUPON mc
+            </if>
+        <where>
+            <if test="couponId != null">
+                mcc.coupon_id = #{couponId}
+            </if>
+            <if test="couponCode != null and couponCode !=''">
+               and mcc.COUPON_CODE = #{couponCode}
+            </if>
+            <if test="used != null">
+               and  mcc.USED = #{used}
+            </if>
+            <if test="isValid != null and isValid == 'true'">
+              AND mc.COUPON_ID = mcc.COUPON_ID
+              AND mc.VALID = 'true'
+              AND mcc.END_TIME &gt;= NOW()
+            </if>
+        </where>
+    </select>
+
+    <select id="queryByPrimaryKey" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE_ID = #{couponCodeId}
+    </select>
+
+    <select id="selectCouponIdByCouponCode" parameterType="Map" resultType="long">
+        SELECT
+            COUPON_ID
+        FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE = #{couponCode}
+    </select>
+    
+    <select id="selectCouponIdByCouponIdAndOther" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        <where>
+           COUPON_ID = #{couponId}
+           <if test="couponCode != null and couponCode != ''">
+                AND coupon_code = #{couponCode}
+           </if>
+           <if test="used != null and used != ''">
+                AND used = #{used}
+           </if>
+           <if test="_startRow != null and _endRow != null">
+            LIMIT ${_startRow - 1}, ${_endRow - _startRow + 1}
+           </if>
+        </where>
+    </select>
+    
+    <select id="selectCouponIdByCouponCodeAndUsedUnion" parameterType="Map" resultType="java.lang.Long">
+        SELECT  COUPON_ID  FROM  ${table_name_1}  WHERE COUPON_CODE = #{couponCode}
+         <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  COUPON_ID  FROM  ${table_name_2}  WHERE COUPON_CODE = #{couponCode}
+         <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>
+          union ALL
+        SELECT  COUPON_ID  FROM  ${table_name_3}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  COUPON_ID  FROM  ${table_name_4}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  COUPON_ID  FROM  ${table_name_5}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  COUPON_ID  FROM  ${table_name_6}  WHERE COUPON_CODE = #{couponCode} 
+          <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  COUPON_ID  FROM  ${table_name_7}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>
+        union ALL
+        SELECT  COUPON_ID  FROM  ${table_name_0}  WHERE COUPON_CODE = #{couponCode}    
+         <if test="used !=null and used !=''">
+            AND used = #{used}
+         </if>    
+    </select>
+    
+    <select id="selectdByCouponCodeAndUsedUnion" parameterType="Map" resultMap="BaseResultMap">
+        SELECT  *  FROM  ${table_name_1}  WHERE COUPON_CODE = #{couponCode}
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_2}  WHERE COUPON_CODE = #{couponCode}
+         <if test="used !=null">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_3}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_4}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+        union ALL
+        SELECT  *  FROM  ${table_name_5}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+        union ALL
+        SELECT  *  FROM  ${table_name_6}  WHERE COUPON_CODE = #{couponCode} 
+          <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_7}  WHERE COUPON_CODE = #{couponCode} 
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_0}  WHERE COUPON_CODE = #{couponCode}    
+         <if test="used !=null ">
+            AND used = #{used}
+        </if>
+    </select>
+
+    <select id="selectByParam" resultMap="BaseResultMap" parameterType="Map">
+        <include refid="reuse_query_sql"/>
+        ORDER BY mcc.coupon_code_id DESC
+        <if test="_startRow != null and _endRow != null">
+          LIMIT ${_startRow - 1}, ${_endRow - _startRow + 1}
+        </if>
+    </select>
+
+    <select id="selectCountByParam" resultType="int" parameterType="Map">
+        SELECT
+            count(*)
+        FROM
+            (<include refid="reuse_query_sql"/>) A
+    </select>
+
+    <insert id="insertBatchWithSameCouponId" parameterType="Map">
+        INSERT INTO
+            ${table_name}
+            (COUPON_CODE_ID, COUPON_ID, COUPON_CODE, USED, BEGIN_TIME, END_TIME, TASK_FILE_ID, CREATE_TIME, UPDATE_TIME)
+        VALUES
+            <foreach collection="markCouponCodeList" item="markCouponCode" separator=",">
+                (#{markCouponCode.couponCodeId}, #{couponId}, #{markCouponCode.couponCode}, #{markCouponCode.used}, #{markCouponCode.beginTime}, #{markCouponCode.endTime}, #{markCouponCode.taskFileId}, NOW(), NOW())
+            </foreach>
+    </insert>
+
+    <select id="queryByUserAndCoupon" resultMap="BaseResultMap" parameterType="Map">
+        SELECT
+            *
+        FROM
+            ${table_name} c
+        WHERE
+            COUPON_CODE_ID IN (SELECT
+                                    COUPON_CODE_ID
+                                FROM
+                                    ${table_user_name} u
+                                WHERE
+                                    u.USER_ID = #{userId}
+                                    AND u.COUPON_ID = #{couponId}
+                              )
+          AND
+            c.COUPON_ID = #{couponId}
+    </select>
+
+    <update id="updateGotTime" parameterType="Map" >
+        UPDATE
+            ${table_name}
+        SET
+            GOT_TIME = NOW(),
+            UPDATE_TIME = NOW()
+        WHERE
+            COUPON_CODE_ID = #{couponCodeId}
+    </update>
+
+    <select id="selectValidMarkCouponCodeListByCouponId" resultMap="BaseResultMap" parameterType="Map">
+        SELECT
+            MCC.*
+        FROM
+            ${table_name} MCC
+        INNER JOIN
+            MARK_COUPON MC
+        ON
+            MC.COUPON_ID = MCC.COUPON_ID
+        WHERE
+            MC.VALID = 'true'
+          AND
+            MCC.GOT_TIME IS  NULL 
+          AND
+            MCC.COUPON_ID = #{couponId}
+        LIMIT 1
+    </select>
+
+    <select id="queryByPrimaryKeys" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        <where>
+            <if test="couponCodeIds != null">
+                COUPON_CODE_ID in
+                <foreach collection="couponCodeIds" item="couponCodeId" separator="," open="(" close=")">
+                    #{couponCodeId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+	<!-- <delete id="deleteUserRelatedCoupon" parameterType="Map">
+        DELETE FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE_ID  IN (SELECT
+                                    MCRU.COUPON_CODE_ID
+                                  FROM
+                                    MARK_COUPON_CODE MCC, ${table_name} MCRU
+                                  WHERE
+                                      MCC.COUPON_CODE_ID = MCRU.COUPON_CODE_ID
+                                    AND
+                                      MCRU.USER_ID = #{userId}
+			                        AND
+                                      MCC.COUPON_ID  = #{couponId}
+		                            AND
+                                      MCC.USED = 'false'
+		                          LIMIT ${deleteNumber}
+		                        )
+	</delete> -->
+
+	<update id="updateMarkCouponCodesWithSameCouponId" parameterType="Map">
+		UPDATE
+            ${table_name}
+        SET
+            used = #{used},
+            UPDATE_TIME = NOW()
+        WHERE
+            coupon_code IN
+            <foreach collection="couponCodes" item="couponCode" separator="," open="(" close=")">
+                #{couponCode}
+            </foreach>
+	</update>
+    
+    <update id="updateMarkCouponCodeUsed" parameterType="Map">
+        UPDATE
+            ${table_name}
+        SET
+            used = #{used},
+            UPDATE_TIME = NOW()
+        WHERE
+            coupon_code = #{couponCode}              
+    </update>
+
+	<select id="getMarkCouponCodeList" parameterType="Map" resultMap="BaseResultMap">
+		SELECT
+            *
+        FROM
+            ${table_name}
+        WHERE
+		    COUPON_CODE IN
+            <foreach collection="codeList" item="code" separator="," open="(" close=")">
+                ${code}
+            </foreach>
+	</select>
+
+    <!-- mc.TERM_OF_VALIDITY -->
+	<select id="getOutOfDateMarkCouponCodeList" parameterType="Map" resultMap="BaseResultMap">
+		SELECT
+           *
+        FROM
+            ${table_name} 
+		WHERE
+            used = 'false'
+		  AND
+            coupon_id = #{couponId}
+	</select>
+    
+    <select id="getOutOfDateMarkCouponCodeIdList" parameterType="Map" resultType="java.lang.Long">
+        SELECT
+           coupon_code_id
+        FROM
+            ${table_name} 
+        WHERE
+            used = #{used}
+          AND
+            coupon_id = #{couponId}
+    </select>
+    
+	<insert id="insertIntoHistoryTable" parameterType="Map" >
+		INSERT INTO
+            ${table_name}
+		    (COUPON_CODE_ID, COUPON_ID, COUPON_CODE, USED, BEGIN_TIME, END_TIME, TASK_FILE_ID, CREATE_TIME, UPDATE_TIME)
+		VALUES
+		   <foreach collection="markCouponCodeList" item="markCouponCode" separator=",">
+                (#{markCouponCode.couponCodeId}, #{markCouponCode.couponId}, #{markCouponCode.couponCode}, #{markCouponCode.used},
+                 #{markCouponCode.beginTime}, #{markCouponCode.endTime}, #{markCouponCode.taskFileId},#{markCouponCode.createTime}, #{markCouponCode.updateTime})
+            </foreach>
+	</insert>
+
+    <!-- NOT USED -->
+	<delete id="deleteCouponCode" parameterType="Map" >
+		DELETE FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE_ID IN
+            <foreach collection="couponCodeIdList" item="couponCodeId" separator="," open="(" close=")">
+                #{couponCodeId}
+            </foreach>
+	</delete>
+    
+    <select id="selectRelateUserCouponCode" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc ,mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+          AND mcc.coupon_code_id=#{couponCodeId}
+          <if test="used != null">
+          AND mcc.used = #{used}
+          </if>
+          AND
+            (
+                (
+                    DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'FIXED'
+                )
+                OR
+                (
+                    DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                )
+                OR
+                (
+                    DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                )
+            )
+           
+    </select>
+    
+    <select id="selectOutofDateRelateUserCouponCode" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc ,mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+            and
+            (
+                DATE_FORMAT(NOW(),'%Y-%m-%d') &gt; DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d')
+                OR
+                (
+                    DATE_FORMAT(NOW(),'%Y-%m-%d') &gt; DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY), '%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                )
+                OR
+                (
+                    DATE_FORMAT(NOW(),'%Y-%m-%d') &gt;= DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                )
+            )
+    </select>
+    
+    <select id="selectOutofDateRelateUserCouponCodemu" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc,
+            mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+            AND DATE_FORMAT(NOW(),'%Y-%m-%d') &gt; DATE_FORMAT(DATE_ADD( mcc.CREATE_TIME,INTERVAL  M.TERM_OF_VALIDITY + M.DAY_AFTER -1 DAY),'%Y-%m-%d')
+            AND mcc.coupon_code_id in
+                <foreach item="item" collection="couponCodeIds" open="(" separator="," close=")">
+                  #{item}
+                </foreach>
+    </select>
+
+    <select id="selectOutofDateRelateUserCouponCodemg" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc,
+            mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+            AND DATE_FORMAT(NOW(),'%Y-%m-%d') &gt; DATE_FORMAT(DATE_ADD( mcc.GOT_TIME,INTERVAL M.TERM_OF_VALIDITY + M.DAY_AFTER-1 DAY),'%Y-%m-%d')
+            AND mcc.coupon_code_id in
+                <foreach item="item" collection="couponCodeIds" open="(" separator="," close=")">
+                  #{item}
+                </foreach>
+    </select>
+    
+    <select id="selectMarkCouponCodeByCouponIds" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc 
+        WHERE mcc.coupon_code_id in
+                <foreach item="item" collection="couponCodeIds" open="(" separator="," close=")">
+                  #{item}
+                </foreach>
+    </select>
+
+    <select id="selectCouponCodeIdBeforDayOutDate" parameterType="Map" resultType="java.lang.Long">
+        select
+            COUPON_CODE_ID
+        from
+            ${table_name} mcc
+        where
+            mcc.coupon_id = #{couponId}
+            and mcc.USED = 'false'
+    </select>
+    
+    <select id="selectRelateUserCouponCodeIds" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc,
+            mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+             <if test="used != null">
+                 AND mcc.used = #{used}
+             </if>
+            AND mcc.coupon_code_id in
+                <foreach item="item" collection="couponCodeIds" open="(" separator="," close=")">
+                  #{item}
+                </foreach>
+            and (
+                  (
+                    DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'FIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                  )
+                )
+    </select>
+    
+    <select id="getOutOfDateMarkCouponCodeListUnion" parameterType="Map" resultMap="BaseResultMap">
+        SELECT * FROM ${table_name_1} mcc WHERE mcc.used = 'false' AND mcc.coupon_id in(
+                 SELECT  mc.COUPON_ID FROM MARK_COUPON mc 
+                 WHERE mc.VALID_TYPE = #{validType}
+                 AND DATE_FORMAT( DATE_ADD( mc.BEGIN_TIME, INTERVAL(mc.TERM_OF_VALIDITY +30) DAY), '%Y-%m-%d' ) 
+                 &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')            )  
+                   limit 45
+        UNION ALL 
+         SELECT * FROM ${table_name_2} mcc WHERE mcc.used = 'false' AND mcc.coupon_id in(
+                 SELECT  mc.COUPON_ID FROM MARK_COUPON mc 
+                 WHERE mc.VALID_TYPE = #{validType}
+                 AND DATE_FORMAT( DATE_ADD( mc.BEGIN_TIME, INTERVAL(mc.TERM_OF_VALIDITY +30) DAY), '%Y-%m-%d' ) 
+                 &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')            )   
+                  limit 45
+        UNION ALL 
+         SELECT * FROM ${table_name_3} mcc WHERE mcc.used = 'false' AND mcc.coupon_id in(
+                 SELECT  mc.COUPON_ID FROM MARK_COUPON mc 
+                 WHERE mc.VALID_TYPE = #{validType}
+                 AND DATE_FORMAT( DATE_ADD( mc.BEGIN_TIME, INTERVAL(mc.TERM_OF_VALIDITY +30) DAY), '%Y-%m-%d' ) 
+                 &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')            )   
+                   limit 45
+         UNION ALL 
+         SELECT * FROM ${table_name_0} mcc WHERE mcc.used = 'false' AND mcc.coupon_id in(
+                 SELECT  mc.COUPON_ID FROM MARK_COUPON mc 
+                 WHERE mc.VALID_TYPE = #{validType}
+                 AND DATE_FORMAT( DATE_ADD( mc.BEGIN_TIME, INTERVAL(mc.TERM_OF_VALIDITY +30) DAY), '%Y-%m-%d' ) 
+                 &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')            )     
+                   limit 45
+                  
+
+    </select>
+    
+    <select id="selectdByCouponCodesAndUsedUnion" parameterType="Map" resultMap="BaseResultMap">
+        SELECT  *  FROM  ${table_name_1}  
+         WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+        #{couponCode}
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_2} 
+          WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+         <if test="used !=null">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_3} 
+          WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_4}          
+          WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+        union ALL
+        SELECT  *  FROM  ${table_name_5}          
+          WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+        union ALL
+        SELECT  *  FROM  ${table_name_6} 
+          WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+          <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_7}  
+          WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>
+         <if test="used !=null ">
+            AND used = #{used}
+         </if>
+         union ALL
+        SELECT  *  FROM  ${table_name_0}          
+          WHERE  COUPON_CODE in 
+        <foreach collection="codes" item="item" open="(" separator="," close=")">
+            ${item}
+        </foreach>  
+         <if test="used !=null ">
+            AND used = #{used}
+        </if>
+    </select>
+    
+    <select id="queryByPrimaryKeyUnion" parameterType="Map" resultMap="BaseResultMap">
+        SELECT  * FROM   ${table_name_0} WHERE COUPON_CODE_ID = #{couponCodeId}
+        UNION ALL 
+        SELECT  * FROM   ${table_name_1} WHERE COUPON_CODE_ID = #{couponCodeId}
+          UNION ALL 
+        SELECT  * FROM   ${table_name_2} WHERE COUPON_CODE_ID = #{couponCodeId}
+          UNION ALL 
+        SELECT  * FROM   ${table_name_3} WHERE COUPON_CODE_ID = #{couponCodeId}
+          UNION ALL 
+        SELECT  * FROM   ${table_name_4} WHERE COUPON_CODE_ID = #{couponCodeId}
+          UNION ALL 
+        SELECT  * FROM   ${table_name_5} WHERE COUPON_CODE_ID = #{couponCodeId}
+          UNION ALL 
+        SELECT  * FROM   ${table_name_6} WHERE COUPON_CODE_ID = #{couponCodeId}
+          UNION ALL 
+        SELECT  * FROM   ${table_name_7} WHERE COUPON_CODE_ID = #{couponCodeId}       
+    </select>
+    
+    <select id="couponCodeUsedFalseSQl"   parameterType="Map" resultMap="BaseResultMap">
+        select MCC.* from ${table_name} MCC ,mark_coupon M  where 
+                MCC.coupon_id = M.coupon_id
+                AND M.coupon_code_id = #{couponCodeId}        
+                AND M.COUPON_ID = MCC.COUPON_ID
+                AND M.VALID = 'true'
+                AND
+                (
+                    (
+                        DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                        AND M.VALID_TYPE = 'FIXED'
+                    )
+                    OR
+                    (
+                        DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL M.TERM_OF_VALIDITY + M.DAY_AFTER -1 DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                        and M.VALID_TYPE = 'UNFIXED'
+                    )
+                    OR
+                    (
+                        DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL M.TERM_OF_VALIDITY + M.DAY_AFTER-1 DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                        and M.VALID_TYPE = 'GOT'
+                    )
+                )        
+    </select>
+
+    <select id="selectByCouponCode" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        WHERE
+            coupon_code_id = #{couponCodeId}
+    </select>
+    
+    <select id="selectOutDateRelateUserCouponCodeIds" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc,
+            mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+            AND mcc.coupon_code_id in
+                <foreach item="item" collection="couponCodeIds" open="(" separator="," close=")">
+                  #{item}
+                </foreach>
+            and (
+                  (
+                    DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'FIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                  )
+                )
+    </select>
+    
+     <select id="selectOutDateRelateUserCouponCodeId" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc,
+            mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+            AND mcc.coupon_code_id = #{couponCodeId}
+               
+            and (
+                  (
+                    DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'FIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                  )
+                )
+    </select>
+    
+    
+    <select id="queryMarkCouponCodeList" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE_ID = #{couponCodeId}
+            <if test="used != null" >
+                and used = #{used}
+            </if>
+           
+    </select>
+    
+    <select id="selectOutDateRelateUserCouponCodeIdes" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            mcc.*
+        FROM
+            ${table_name} mcc,
+            mark_coupon M
+        WHERE
+           
+            AND mcc.coupon_code_id in
+            <foreach collection="couponCodeIdes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>               
+            and (
+                  (
+                    DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'FIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                  )
+                  OR
+                  (
+                    DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d') &lt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                  )
+                )
+    </select>
+    
+    
+    <select id="queryMarkCouponCodeListByCouponCodeIds" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE_ID in 
+              <foreach collection="couponCodeIdes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>   
+            <if test="used != null" >
+                and used = #{used}
+            </if>
+           
+    </select>
+    
+     <select id="selectRelateUserCouponCodeByCouponCodeIdsMcc" parameterType="Map" resultMap="BaseResultMapMcc">
+        SELECT
+            mcc.*,M.BEGIN_TIME M_BEGIN_TIME,M.TERM_OF_VALIDITY,M.DAY_AFTER,M.VALID_TYPE
+        FROM
+            ${table_name} mcc ,mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+          AND mcc.coupon_code_id in 
+          <foreach collection="couponCodeIds" item="item" open="(" separator="," close=")">
+             #{item}
+          </foreach>
+          <if test="used != null">
+          AND mcc.used = #{used}
+          </if>
+          AND
+            (
+                (
+                    DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'FIXED'
+                )
+                OR
+                (
+                    DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                )
+                OR
+                (
+                    DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                )
+            )
+           
+    </select>
+    
+     <select id="selectRelateUserCouponCodeMcc" parameterType="Map" resultMap="BaseResultMapMcc">
+        SELECT
+            mcc.*,M.BEGIN_TIME M_BEGIN_TIME,M.TERM_OF_VALIDITY,M.DAY_AFTER,M.VALID_TYPE
+        FROM
+            ${table_name} mcc ,mark_coupon M
+        WHERE
+            mcc.coupon_id = M.coupon_id
+          AND mcc.coupon_code_id=#{couponCodeId}
+          <if test="used != null">
+          AND mcc.used = #{used}
+          </if>
+          AND
+            (
+                (
+                    DATE_FORMAT(DATE_ADD(M.BEGIN_TIME,INTERVAL M.TERM_OF_VALIDITY DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'FIXED'
+                )
+                OR
+                (
+                    DATE_FORMAT(DATE_ADD(mcc.CREATE_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER-1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'UNFIXED'
+                )
+                OR
+                (
+                    DATE_FORMAT(DATE_ADD(mcc.GOT_TIME,INTERVAL (M.TERM_OF_VALIDITY + M.DAY_AFTER -1) DAY),'%Y-%m-%d') &gt;= DATE_FORMAT(NOW(),'%Y-%m-%d')
+                    AND M.VALID_TYPE = 'GOT'
+                )
+            )
+           
+    </select>
+      <!--优惠券活动过期180天的优惠券迁移-->
+     <select id="getOutOfDateMarkCouponCodeListFixed" parameterType="Map" resultMap="BaseResultMap">
+         SELECT mcc.* FROM ${table_name} mcc WHERE mcc.used = 'false' AND mcc.coupon_id in(
+                 SELECT  mc.COUPON_ID FROM MARK_COUPON mc 
+                 WHERE mc.VALID_TYPE = 'FIXED'
+                 and mc.COUPON_TYPE='B'
+                 AND DATE_FORMAT( DATE_ADD( mc.BEGIN_TIME, INTERVAL(mc.TERM_OF_VALIDITY +180) DAY), '%Y-%m-%d' ) 
+                 &lt; DATE_FORMAT(NOW(),'%Y-%m-%d')            )   
+                  and mcc.got_time is null 
+                  
+                  limit #{size}
+    </select>
+    
+     <delete id="deleteOutMarkCouponCodeByCouponCodeIds" parameterType="Map">
+        DELETE FROM
+            ${table_name}
+        WHERE
+            COUPON_CODE_ID in 
+            <foreach collection="couponCodeIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </delete>
+    
+      <select id="selectcouponCodeIdsBycouponIdAndupdateTime" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            *
+        FROM
+            ${table_name}
+        WHERE
+            COUPON_ID = #{couponId} AND UPDATE_TIME &gt;= #{startTime} AND UPDATE_TIME &lt;= #{endTime}
+    </select>
+    
+     <select id="selectcouponCodeIdsBycouponIdAndupdateTimeCount" parameterType="Map" resultMap="BaseResultMap">
+        SELECT
+            count(1)
+        FROM
+            ${table_name}
+        WHERE
+            COUPON_ID = #{couponId} AND UPDATE_TIME &gt;= #{startTime} AND UPDATE_TIME &lt;= #{endTime}
+    </select>
+    
+</mapper>

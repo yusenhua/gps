@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Implementation-Vendor: Pivotal Software, Inc.
+Implementation-Title: vst-coupon-model
+Implementation-Version: 1.0.0
+Implementation-Vendor-Id: com.user.gps
+Build-Jdk: 1.7.0_80
+Built-By: jasonyu
+Created-By: Maven Integration for Eclipse
+Implementation-URL: http://maven.apache.org
+

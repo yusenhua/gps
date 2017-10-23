@@ -1,0 +1,34 @@
+        优惠券迁移注意事项
+1、实体类XML
+   a、<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+   修改为
+   <!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    b、resultClass  To resultType
+    c、parameterClass To parameterType
+    d、dynamic 去掉
+    e、isNotEmpty  To  if 参考http://www.mybatis.org/mybatis-3/zh/dynamic-sql.html
+    f、like 修改
+    g、iterate To foreach
+2、DAO  重构参考CityDaO
+3、service层 service和Impl
+
+1, xml dtd
+2, 预编译的参数替换符
+3, sql函数,like, limit
+4, 主键
+5, DAO层
+
+regex:
+    \(# -> (#{
+    \s# ->  #{
+
+    #\)  -> })
+    #,  -> },
+    #\n -> }\n
+
+    sysdate -> NOW()
+    
+    
+    LVMAMA_SUPER.UNITY_ORDER表COUPON_ID业务逻辑重新修改

@@ -1,0 +1,9 @@
+spring:
+  application: 
+    name: vst-coupon-service
+       
+info:
+  app:
+    name: coupon-service
+    version: v1
+    description: 优惠券服务系统

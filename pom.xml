@@ -1,0 +1,144 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+	
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.4.4.RELEASE</version>
+    </parent>
+
+    <groupId>com.user.gps</groupId>
+    <artifactId>gps_information</artifactId>
+    <version>1.0.0</version>
+	<packaging>pom</packaging>
+    <name>gps_information</name>
+
+    <modules>
+        <module>gps_information_model</module>
+        <module>gps_information_common</module>
+        <module>gps_information_service</module>
+    </modules>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.7</java.version>
+		<springfox.swagger.version>2.6.1</springfox.swagger.version>
+		<swagger.annotations>1.5.12</swagger.annotations>
+		<testng.version>6.8</testng.version>
+	</properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.user.gps</groupId>
+                <artifactId>gps_information_common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.user.gps</groupId>
+                <artifactId>gps_information_model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>Brixton.SR4</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+       	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>${testng.version}</version>
+			<scope>test</scope>
+		</dependency>
+    </dependencies>
+
+    <distributionManagement>
+       <repository>
+            <id>artifactory.releases</id>
+            <name>artifactory.releases</name>
+            <url>http://10.200.1.206:8081/artifactory/PLATFORM-CORE</url>
+        </repository>
+        <snapshotRepository>
+            <id>artifactory.snapshots</id>
+            <name>artifactory.snapshots</name>
+            <url>http://10.200.1.206:8081/artifactory/PLATFORM-CORE-SNAPSHOT</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <!--<repository>
+            <id>artifactory.repo-SNAPSHOT</id>
+            <url>http://10.200.1.206:8081/artifactory/PLATFORM-CORE-SNAPSHOT</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>artifactory.repo-RELEASE</id>
+            <url>http://10.200.1.206:8081/artifactory/PLATFORM-CORE</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+          -->
+        
+         <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <url>http://192.168.0.101:8081/nexus/content/groups/public</url>
+            <releases>
+              <enabled>true</enabled>
+            </releases>
+            <snapshots>
+              <updatePolicy>always</updatePolicy>
+              <enabled>true</enabled>
+            </snapshots>
+        </repository> 
+    </repositories>
+
+</project>
+
